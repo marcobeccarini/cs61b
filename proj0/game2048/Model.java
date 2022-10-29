@@ -94,6 +94,53 @@ public class Model extends Observable {
         setChanged();
     }
 
+    public boolean CheckEqualities(){
+        boolean changed = false;
+
+        for(int row = board.size() -1; row >= 0; row -= 1) {
+            for (int col = 0; col < board.size(); col += 1) {
+                Tile testTile = board.tile(col, row);
+                if(testTile != null){
+                    int row2 = row-1;
+                    if (row2 >=0){
+                        Tile equalTile = board.tile(col, row2);
+                        if(equalTile != null){
+                            if(testTile.value() == equalTile.value()){
+                                board.move(col, row, equalTile);
+                                score += equalTile.value() *2;
+                                changed = true;
+                                MoveEverythingUp();
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+        return changed;
+    }
+    public boolean MoveEverythingUp(){
+        boolean changed = false;
+
+        for(int row = board.size() -1; row >= 0; row -= 1){
+            for (int col = 0; col < board.size() ; col += 1){
+                Tile nullTile = board.tile(col, row);
+                if (nullTile == null){
+                    int freeRow = row;
+                    for (int row2 = row -1; row2 >=0; row2 -=1){
+                            Tile testTile = board.tile(col, row2);
+                            if(testTile != null){
+                                board.move(col, freeRow, testTile);
+                                freeRow -=1;
+                                changed = true;
+                            }
+                        }
+                }
+            }
+        }
+        return changed;
+    }
+
     /** Tilt the board toward SIDE. Return true iff this changes the board.
      *
      * 1. If two Tile objects are adjacent in the direction of motion and have
@@ -118,24 +165,11 @@ public class Model extends Observable {
         {
             board.setViewingPerspective(side);
         }
+        boolean changed1= MoveEverythingUp();
+        boolean changed2 = CheckEqualities();
 
-        for(int col = 0; col<board.size(); col +=1){
-            for(int row = 0; row < board.size(); row += 1){
-                while(board.tile(col, row+1) == null){
-                    row += 1;
-                }
-
-                if(board.tile(col, row).value() == board.tile(col, row+1).value()){
-                    Tile t = board.tile(col, row);
-                    board.move(col, row + 1, t);
-                }
-            }
-        }
-
-
-
-
-        board.setViewingPerspective(side.NORTH);
+        changed = changed1 || changed2;
+      board.setViewingPerspective(side.NORTH);
 
         checkGameOver();
         if (changed) {
@@ -205,40 +239,45 @@ public class Model extends Observable {
         // TODO: Fill in this function.
         boolean atLeastOneMoveExists = false;
 
-        for(int row = 0; row<b.size(); row = row + 1){
-            for(int col = 0; col<b.size(); col = col +1){
+
+        for(int row = 0; row<b.size(); row = row + 1) {
+            for (int col = 0; col < b.size(); col = col + 1) {
 
                 //First we check if there is at least one empty space in the board
-                if(b.tile(col, row) == null){
+                if (b.tile(col, row) == null) {
                     atLeastOneMoveExists = true;
-                    break;
-                }
-
-                //Then we check for adjacent tiles
-                else{
-                    if(col>0 && col<b.size()){
-                        if(b.tile(col, row).value() == b.tile(col-1, row).value()){
-                            atLeastOneMoveExists = true;
-                        }
-                    }
-                    if(col>0 && col<b.size()-1){
-                        if(b.tile(col, row).value() == b.tile(col+1, row).value()){
-                            atLeastOneMoveExists = true;
-                        }
-                    }
-                    if(row>0 && row<b.size()){
-                        if(b.tile(col, row).value() == b.tile(col, row-1).value()){
-                            atLeastOneMoveExists = true;
-                        }
-                    }
-                    if(row>0 && row<b.size()-1){
-                        if(b.tile(col, row).value() == b.tile(col, row+1).value()){
-                            atLeastOneMoveExists = true;
-                        }
-                    }
+                    return atLeastOneMoveExists;
                 }
             }
         }
+
+        for(int row = 0; row<b.size(); row = row + 1) {
+            for (int col = 0; col < b.size(); col = col + 1) {
+
+                //Then we check for adjacent tiles
+                if (row + 1 < b.size()){
+                    if(b.tile(col, row).value() == b.tile(col, row+1).value()){
+                        return true;
+                    }
+                }
+                if (col + 1 < b.size()){
+                    if(b.tile(col, row).value() == b.tile(col + 1, row).value()){
+                        return true;
+                    }
+                }
+                if (row - 1 >= 0){
+                    if(b.tile(col, row).value() == b.tile(col, row-1).value()){
+                        return true;
+                    }
+                }
+                if (col - 1 >= 0){
+                    if(b.tile(col, row).value() == b.tile(col - 1, row).value()){
+                        return true;
+                    }
+                }
+
+                }
+            }
 
         return atLeastOneMoveExists;
     }
